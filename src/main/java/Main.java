@@ -6,6 +6,8 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -20,8 +22,16 @@ public class Main {
                 .build())
             .build();
         HttpGet request = new HttpGet(url);
-        CloseableHttpResponse httpResponse = httpClient.execute(request);
-        String body = new String(httpResponse.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-        System.out.println(body);
+        CloseableHttpResponse response = httpClient.execute(request);
+        String body = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+
+        ResponseToObject rto = new ResponseToObject();
+        List<Facts> factsList = rto.JsonToObjectsList(body);
+        List<Facts> factsListFilterUpvotes = factsList.stream()
+                .filter(value -> value.getUpvotes().isPresent() && value.getUpvotes().get() > 0)
+                .collect(Collectors.toList());
+        for (Facts f : factsListFilterUpvotes) {
+            System.out.println(f);
+        }
     }
 }
