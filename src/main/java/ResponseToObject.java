@@ -1,14 +1,17 @@
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.List;
 
 public class ResponseToObject {
 
-    public List<Facts> JsonToObjectsList(String json) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, new TypeReference<List<Facts>>() {});
+    public <T> List<T> JsonToObjectsList(String json, Class<T> jsonToObjectClass) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper()
+                .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        JavaType type = mapper.getTypeFactory()
+                .constructCollectionType(List.class, jsonToObjectClass);
+        return mapper.readValue(json, type);
     }
 
 }
